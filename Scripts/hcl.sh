@@ -1,5 +1,6 @@
-hosts="$(/usr/bin/getent hosts)"
+#!/bin/bash
 
+hosts="$(/usr/bin/getent hosts)"
 
 IFS=$'\n' lines=($hosts)
 count=0

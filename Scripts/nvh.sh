@@ -1,3 +1,5 @@
+#!/bin/bash
+
 #Declaration of constants
 RED=`tput setaf 1`
 GREEN=`tput setaf 2`
@@ -27,39 +29,40 @@ prompt_confirm() {
 
 printf "\n${GREEN}Hi! You have opened a virtual host creator mostly for Symfony projects${RESET}\n\n"
 
-COUNTER=1
-while (( $COUNTER <= "$#" ))
-do
-	if [ ${!COUNTER} = "-l" ]
-	then
-        let COUNTER=COUNTER+1
-        if [ -d "${!COUNTER}" ]; then
-            location=${!COUNTER}
-        else
-            echo "${RED}Invalid location ${YELLOW}\"${!COUNTER}\"${RED}!${RESET}"
-		fi
-	elif [ ${!COUNTER} = "-h" ]
-	then
-        let COUNTER=COUNTER+1
-        host=${!COUNTER}
-	elif [ ${!COUNTER} = "-v" ]
-	then
-        let COUNTER=COUNTER+1
-        version=${!COUNTER}
-	elif [ ${!COUNTER} = "-e" ]
-	then
-        let COUNTER=COUNTER+1
-        entry=${!COUNTER}
-	elif [ ${!COUNTER} = "-p" ]
-	then
-        let COUNTER=COUNTER+1
-        path=${!COUNTER}
-	else
-		proj_name=${!COUNTER}
-	fi
-
-	let COUNTER=COUNTER+1
-done
+# TODO: read optional parameters and use them
+#COUNTER=1
+#while (( $COUNTER <= "$#" ))
+#do
+#	if [ ${!COUNTER} = "-l" ]
+#	then
+#        let COUNTER=COUNTER+1
+#        if [ -d "${!COUNTER}" ]; then
+#            location=${!COUNTER}
+#        else
+#            echo "${RED}Invalid location ${YELLOW}\"${!COUNTER}\"${RED}!${RESET}"
+#		fi
+#	elif [ ${!COUNTER} = "-h" ]
+#	then
+#        let COUNTER=COUNTER+1
+#        host=${!COUNTER}
+#	elif [ ${!COUNTER} = "-v" ]
+#	then
+#        let COUNTER=COUNTER+1
+#        version=${!COUNTER}
+#	elif [ ${!COUNTER} = "-e" ]
+#	then
+#        let COUNTER=COUNTER+1
+#        entry=${!COUNTER}
+#	elif [ ${!COUNTER} = "-p" ]
+#	then
+#        let COUNTER=COUNTER+1
+#        path=${!COUNTER}
+#	else
+#		proj_name=${!COUNTER}
+#	fi
+#
+#	let COUNTER=COUNTER+1
+#done
 
 #read location if it is not provided
 if [ -z "$location" ]; then
@@ -87,7 +90,7 @@ if [ -z "$proj_name" ]; then
     done
 fi
 
-#read host name if it is not provided
+#read host name
 if [ -z "$host" ]; then
 	echo -ne "Enter the host name [${YELLOW}"${proj_name,,}".local${RESET}]: "
 	read hostName
@@ -100,7 +103,7 @@ if [ -z "$host" ]; then
     done
 fi
 
-#read entry point path if it is not provided
+#read entry point path
 if [ -z "$path" ]; then
 	echo -ne "Enter the path to entry point [${YELLOW}$PATH${RESET}]: "
 	read path
@@ -113,7 +116,7 @@ if [ -z "$path" ]; then
     done
 fi
 
-#read entry point if it is not provided
+#read entry point file
 if [ -z "$entry" ]; then
 	echo -ne "Enter the entry point [${YELLOW}$ENTRY${RESET}]: "
 	read entry
@@ -126,7 +129,7 @@ if [ -z "$entry" ]; then
     done
 fi
 
-#read error log file
+#read error log file (to be set on the virtual host)
 if [ -z "$error_log" ]; then
 	echo -ne "Enter the error log file [${YELLOW}$ERROR_LOG${proj_name,,}-error.log${RESET}]: "
 	read error_log
@@ -134,7 +137,7 @@ if [ -z "$error_log" ]; then
 fi
 
 
-#read custom log file
+#read custom log file (to be set on the virtual host)
 if [ -z "$custom_log" ]; then
 	echo -ne "Enter the custom log file [${YELLOW}$ERROR_LOG${proj_name,,}-access.log${RESET}]: "
 	read custom_log
@@ -166,14 +169,14 @@ if [[ $? == 1 ]]; then
 	exit 0
 fi
 
-#read version if it is not provided
+#read symfony version (to know what set of commands to use for setting permissions
 if [ -z "$version" ]; then
 	echo -ne "Enter the version of symfony [${YELLOW}$VERSION${RESET}]: "
 	read version
 	version=${version:-$VERSION}
 fi
 
-#change the directoy to
+#change the directoy to the project (specific to Symfony file structure)
 cd $location/$proj_name$path/../
 
 if [[ version == 2 ]]; then
@@ -186,12 +189,7 @@ elif [[ version == 3 ]]; then
 	$("sudo setfacl -dR -m u:\"$HTTPDUSER\":rwX -m u:`whoami`:rwX var")
 fi
 
-
-prompt_confirm "Do you want run $ composer install?"
-
-if [[ $? == 0 ]]; then
-	/usr/bin/sudo php ~/composer.phar install
-	exit 0
-fi
+# TODO: Ask the user to run composer install and some other commands that we usually run when setting a project (create database, schema, etc.)
+#prompt_confirm "Do you want run $ composer install?"
 
 echo "${GREEN}Setup ended successfully!${RESET}"
